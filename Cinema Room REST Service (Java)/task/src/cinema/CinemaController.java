@@ -4,11 +4,7 @@ import cinema.models.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class CinemaController {
@@ -51,5 +47,18 @@ public class CinemaController {
 
         return new ResponseEntity<>(new ReturnedSeatDTO(cinemaRepository.returnSeat(token.token())),
                 HttpStatus.OK);
+    }
+
+    @PostMapping("/stats")
+    public ResponseEntity<?> getStats(@RequestParam(value = "password", required = false) String password) {
+        if (password == null || !password.equals("super_secret")) {
+            return new ResponseEntity<>(new ErrorDTO("The password is wrong!"), HttpStatus.UNAUTHORIZED);
+        }
+
+        return new ResponseEntity<>(new StatsDTO(
+                cinemaRepository.getCurrentIncome(),
+                cinemaRepository.getNumberOfAvailableSeats(),
+                cinemaRepository.getNumberOfPurchasedTickets()
+        ), HttpStatus.OK);
     }
 }

@@ -107,4 +107,22 @@ public class CinemaRepository {
     public boolean isOutOfBound(int row, int column) {
         return row > cinema.getTotal_rows() || column > cinema.getTotal_columns() || row < 1 || column < 1;
     }
+
+    public int getNumberOfAvailableSeats() {
+        return getAvailableSeats().size();
+    }
+
+    public int getNumberOfPurchasedTickets() {
+        return cinema.getSeats().size() - getNumberOfAvailableSeats();
+    }
+
+    public int getCurrentIncome() {
+        int currentIncome = 0;
+        for (int key : cinema.getSeats().keySet()) {
+            if (cinema.getSeats().get(key).isPurchased()) {
+                currentIncome += cinema.getSeats().get(key).getPrice();
+            }
+        }
+        return currentIncome;
+    }
 }
