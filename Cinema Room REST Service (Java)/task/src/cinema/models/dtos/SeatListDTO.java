@@ -1,4 +1,4 @@
-package cinema.models;
+package cinema.models.dtos;
 
 import java.util.List;
 

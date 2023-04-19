@@ -1,8 +1,6 @@
 package cinema;
 
-import cinema.models.ErrorDTO;
-import cinema.models.SeatDTO;
-import cinema.models.SeatListDTO;
+import cinema.models.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 
 @RestController
@@ -39,6 +36,20 @@ public class CinemaController {
         }
 
         return new ResponseEntity<>(cinemaRepository.purchaseSeat(requestSeat.row(), requestSeat.column()),
+                HttpStatus.OK);
+    }
+
+    @PostMapping("/return")
+    public ResponseEntity<?> returnTicket(@RequestBody TokenDTO token) {
+        if (!cinemaRepository.isValidToken(token.token())) {
+            return new ResponseEntity<>(new ErrorDTO("Wrong token!"), HttpStatus.BAD_REQUEST);
+        }
+
+        if (cinemaRepository.isSeatAvailable(token.token())) {
+            return new ResponseEntity<>(new ErrorDTO("That ticket has not been purchased!"), HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(new ReturnedSeatDTO(cinemaRepository.returnSeat(token.token())),
                 HttpStatus.OK);
     }
 }

@@ -1,11 +1,14 @@
 package cinema;
 
 import cinema.models.Cinema;
-import cinema.models.SeatDTO;
-import cinema.models.SeatListDTO;
+import cinema.models.Seat;
+import cinema.models.dtos.PurchaseDTO;
+import cinema.models.dtos.SeatDTO;
+import cinema.models.dtos.SeatListDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 @Component
 public class CinemaRepository {
@@ -38,15 +41,50 @@ public class CinemaRepository {
         return availableSeats;
     }
 
-    public SeatDTO purchaseSeat(int row, int column) {
+    public PurchaseDTO purchaseSeat(int row, int column) {
         int key = row * 100 + column;
         if (cinema.getSeats().containsKey(key) && !cinema.getSeats().get(key).isPurchased()) {
             cinema.getSeats().get(key).setPurchased(true);
+
+            SeatDTO seat = new SeatDTO(
+                    cinema.getSeats().get(key).getRow(),
+                    cinema.getSeats().get(key).getColumn(),
+                    cinema.getSeats().get(key).getPrice()
+            );
+
+            return new PurchaseDTO(
+                    cinema.getSeats().get(key).getToken().toString(),
+                    seat
+            );
+        }
+        return null;
+    }
+
+    public SeatDTO returnSeat(String token) {
+        int key = Objects.requireNonNull(findByToken(token)).getKey();
+
+        if (cinema.getSeats().containsKey(key) && cinema.getSeats().get(key).isPurchased()) {
+            cinema.getSeats().get(key).setPurchased(false);
+
             return new SeatDTO(
                     cinema.getSeats().get(key).getRow(),
                     cinema.getSeats().get(key).getColumn(),
                     cinema.getSeats().get(key).getPrice()
             );
+        }
+
+        return null;
+    }
+
+    public boolean isValidToken(String token) {
+        return findByToken(token) != null;
+    }
+
+    private Seat findByToken(String token) {
+        for (int key : cinema.getSeats().keySet()) {
+            if (cinema.getSeats().get(key).getToken().toString().equals(token)) {
+                return cinema.getSeats().get(key);
+            }
         }
         return null;
     }
@@ -54,6 +92,16 @@ public class CinemaRepository {
     public boolean isSeatAvailable(int row, int column) {
         int key = row * 100 + column;
         return cinema.getSeats().containsKey(key) && !cinema.getSeats().get(key).isPurchased();
+    }
+
+    public boolean isSeatAvailable(String token) {
+        for (int key : cinema.getSeats().keySet()) {
+            if (cinema.getSeats().get(key).getToken().toString().equals(token)
+                    && !cinema.getSeats().get(key).isPurchased()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isOutOfBound(int row, int column) {
